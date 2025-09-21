@@ -25,8 +25,10 @@ import com.luv2code.springboot.cruddemo.service.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(name = "Department Management", description = "CRUD operations for departments")
 @RestController
 @RequestMapping("/api/departments")
 public class DepartmentRestController {
