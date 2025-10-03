@@ -64,7 +64,7 @@ public class DepartmentRestControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = { "ADMIN" }) // Add the required role
+    @WithMockUser(roles = { "ADMIN" })
     void testDeleteDepartment() throws Exception {
         doNothing().when(departmentService).deleteDepartment(1L);
 
