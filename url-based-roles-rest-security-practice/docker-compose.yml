@@ -1,34 +1,51 @@
+version: "3.9"
+
 services:
+  # =============================================
+  # POSTGRES DATABASE SERVICE
+  # =============================================
   db:
     container_name: postgres
     image: postgres:latest
     environment:
-      POSTGRES_PASSWORD: password
       POSTGRES_USER: orvi27
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: employee_db
       PGDATA: /data/postgres
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
-      - "5332:5432"
+      - "5332:5432"   # host:container
     networks:
-      - db
+      - app-network
     restart: unless-stopped
 
+  # =============================================
+  # SPRING BOOT APPLICATION SERVICE
+  # =============================================
   app:
     build: .
+    container_name: springboot-jwt-app
     ports:
       - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker   
     depends_on:
       - db
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/employee_db
+      SPRING_DATASOURCE_USERNAME: orvi27
+      SPRING_DATASOURCE_PASSWORD: password
     networks:
-      - db
+      - app-network
     restart: unless-stopped
 
+# =============================================
+# NETWORK AND VOLUME CONFIGURATION
+# =============================================
 networks:
-  db:
+  app-network:
     driver: bridge
 
 volumes:

@@ -2,71 +2,77 @@ package com.luv2code.springboot.cruddemo.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.provisioning.UserDetailsManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.sql.DataSource;
 
-// Marks this class as a configuration class for Spring Security.
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
-    // Defines the security filter chain, the core of Spring Security configuration.
+    // Remove the constructor injection for JwtAuthenticationFilter
+    // We'll use @Bean method instead
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(authz -> authz
-                // Define URL-based authorization rules.
-                // EMPLOYEE role can view lists and individual employees.
-                .requestMatchers(HttpMethod.GET, "/api/employees").hasRole("EMPLOYEE")
-                .requestMatchers(HttpMethod.GET, "/api/employees/**").hasRole("EMPLOYEE")
-                // MANAGER role can create and update employees.
-                .requestMatchers(HttpMethod.POST, "/api/employees").hasRole("MANAGER")
-                .requestMatchers(HttpMethod.PUT, "/api/employees/**").hasRole("MANAGER")
-                // Only ADMIN role can delete employees.
-                .requestMatchers(HttpMethod.DELETE, "/api/employees/**").hasRole("ADMIN")
-                // All other requests must be authenticated (common best practice).
-                .requestMatchers(HttpMethod.GET, "/api/departments").hasRole("EMPLOYEE") // GET all
-                .requestMatchers(HttpMethod.GET, "/api/departments/{id}").hasRole("EMPLOYEE") // GET by ID
-                .requestMatchers(HttpMethod.GET, "/api/departments/name/{name}").hasRole("EMPLOYEE") // GET by name
-                .requestMatchers(HttpMethod.POST, "/api/departments").hasRole("MANAGER") // CREATE
-                .requestMatchers(HttpMethod.PUT, "/api/departments/{id}").hasRole("MANAGER") // UPDATE
-                .requestMatchers(HttpMethod.DELETE, "/api/departments/{id}").hasRole("ADMIN") // DELETE
-                
-                .anyRequest().authenticated());
+    public UserDetailsService userDetailsService(DataSource dataSource) {
+        JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
 
-        // Enables HTTP Basic Authentication (pop-up login in browsers).
-        http.httpBasic(Customizer.withDefaults());
+        userDetailsManager.setUsersByUsernameQuery(
+                "SELECT user_id, pw, active FROM members WHERE user_id = ?");
+        userDetailsManager.setAuthoritiesByUsernameQuery(
+                "SELECT user_id, role FROM roles WHERE user_id = ?");
 
-        // Disables CSRF protection. This is common and safe for stateless REST APIs.
-        http.csrf(csrf -> csrf.disable());
+        return userDetailsManager;
+    }
 
-        // Makes the API stateless (no sessions). Each request must be authenticated.
-        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthFilter) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/api/employees/**").hasAnyRole("EMPLOYEE", "MANAGER", "ADMIN")
+                        .requestMatchers("/api/departments/**").hasAnyRole("MANAGER", "ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider(userDetailsService(null)))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Configures a custom JDBC-based user detail service to fetch users/roles from
-    // your database.
     @Bean
-    public UserDetailsManager userDetailsManager(DataSource dataSource) {
-        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
 
-        // Defines the custom SQL query to load a user by username.
-        // The query must return: username, password, enabled/active status.
-        jdbcUserDetailsManager.setUsersByUsernameQuery(
-                "select user_id, pw, active from members where user_id = ?");
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
-        // Defines the custom SQL query to load authorities/roles by username.
-        // The query must return: username, authority/role (e.g., "ROLE_EMPLOYEE").
-        jdbcUserDetailsManager.setAuthoritiesByUsernameQuery(
-                "select user_id, role from roles where user_id = ?");
-
-        return jdbcUserDetailsManager;
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

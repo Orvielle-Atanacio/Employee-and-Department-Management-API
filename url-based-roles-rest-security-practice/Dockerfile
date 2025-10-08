@@ -1,17 +1,21 @@
-# Use OpenJDK base image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy the JAR file into the container
+# Copy the JAR file from your build
 COPY target/*.jar app.jar
 
-# Expose port 8080
+# Create a non-root user and switch to it
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring
+
+# Expose the application port
 EXPOSE 8080
 
-# Set default profile to docker
-ENV SPRING_PROFILES_ACTIVE=docker
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
