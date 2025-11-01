@@ -1,4 +1,4 @@
-package com.luv2code.springboot.cruddemo.rest;
+package com.luv2code.springboot.cruddemo.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;

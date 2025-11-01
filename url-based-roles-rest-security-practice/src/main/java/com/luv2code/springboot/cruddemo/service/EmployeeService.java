@@ -1,14 +1,13 @@
 package com.luv2code.springboot.cruddemo.service;
 
-
 import com.luv2code.springboot.cruddemo.dto.CreateEmployeeRequestDTO;
 import com.luv2code.springboot.cruddemo.dto.EmployeeResponseDTO;
+import com.luv2code.springboot.cruddemo.entity.Employee;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-// This interface defines the contract for the Employee Service layer.
-// It declares the business logic available for the Employee entity.
-// The implementation of this interface will contain the actual logic.
+import java.util.Optional;
+
 public interface EmployeeService {
 
     Page<EmployeeResponseDTO> getAllEmployees(Pageable pageable);
@@ -23,5 +22,14 @@ public interface EmployeeService {
 
     Page<EmployeeResponseDTO> getEmployeesByDepartment(Long departmentId, Pageable pageable);
 
-    // Keep entity methods internal or remove if not needed
+    // Add these methods that your controller uses
+    Optional<Employee> findByEmail(String email);
+
+    Employee findById(int id);
+
+    void deleteById(int id);
+
+    EmployeeResponseDTO createUser(CreateEmployeeRequestDTO request);
+
+    Employee save(Employee employee, String departmentName);
 }
