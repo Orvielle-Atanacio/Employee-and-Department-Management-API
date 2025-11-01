@@ -1,4 +1,4 @@
-package com.luv2code.springboot.cruddemo.ExceptionHandling;
+package com.luv2code.springboot.cruddemo.exceptionhandling;
 
 /**
  * A standardized data structure for sending error information from the API to the client.
@@ -35,10 +35,10 @@ public class ErrorResponse {
     // Provides a detailed string representation, primarily for server-side logging.
     @Override
     public String toString() {
-        return "ErrorResponse{" +
-                "message='" + message + '\'' +
-                ", statusCode=" + statusCode +
-                ", timestamp=" + timestamp +
-                '}';
+        return "ErrorResponse{"
+                + "message='" + message + '\''
+                + ", statusCode=" + statusCode
+                + ", timestamp=" + timestamp
+                + '}';
     }
 }

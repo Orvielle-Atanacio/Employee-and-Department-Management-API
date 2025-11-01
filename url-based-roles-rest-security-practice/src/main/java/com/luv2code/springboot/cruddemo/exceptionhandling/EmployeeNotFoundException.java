@@ -1,4 +1,4 @@
-package com.luv2code.springboot.cruddemo.ExceptionHandling;
+package com.luv2code.springboot.cruddemo.exceptionhandling;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -14,7 +14,7 @@ public class EmployeeNotFoundException extends RuntimeException {
         super(message); 
     }
 
-     // Constructor with a message and the original cause of the exception (for chaining exceptions).
+    // Constructor with a message and the original cause of the exception (for chaining exceptions).
     public EmployeeNotFoundException(String message, Throwable cause) {
         super(message, cause); // Useful for wrapping and preserving lower-level exceptions (e.g., from JPA).
     }

@@ -8,11 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.luv2code.springboot.cruddemo.ExceptionHandling.EmployeeNotFoundException;
+import com.luv2code.springboot.cruddemo.exceptionhandling.EmployeeNotFoundException;
 import com.luv2code.springboot.cruddemo.dao.DepartmentRepository;
-import com.luv2code.springboot.cruddemo.dto.DepartmentResponseDTO;
 import com.luv2code.springboot.cruddemo.entity.Department;
-import com.luv2code.springboot.cruddemo.entity.Employee;
 
 @Service
 public class DepartmentServiceImpl implements DepartmentService {

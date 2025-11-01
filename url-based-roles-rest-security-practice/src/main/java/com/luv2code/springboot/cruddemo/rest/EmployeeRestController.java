@@ -1,7 +1,14 @@
 package com.luv2code.springboot.cruddemo.rest;
 
-import java.util.List;
-
+import com.luv2code.springboot.cruddemo.dto.CreateEmployeeRequestDTO;
+import com.luv2code.springboot.cruddemo.dto.DepartmentResponseDTO;
+import com.luv2code.springboot.cruddemo.dto.EmployeeResponseDTO;
+import com.luv2code.springboot.cruddemo.entity.Employee;
+import com.luv2code.springboot.cruddemo.exceptionhandling.EmployeeNotFoundException;
+import com.luv2code.springboot.cruddemo.service.EmployeeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,16 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.luv2code.springboot.cruddemo.ExceptionHandling.EmployeeNotFoundException;
-import com.luv2code.springboot.cruddemo.dto.CreateEmployeeRequestDTO;
-import com.luv2code.springboot.cruddemo.dto.DepartmentResponseDTO;
-import com.luv2code.springboot.cruddemo.dto.EmployeeResponseDTO;
-import com.luv2code.springboot.cruddemo.entity.Employee;
-import com.luv2code.springboot.cruddemo.service.EmployeeService;
-
-import jakarta.validation.Valid;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 // Marks this class as a REST controller whose methods return domain objects (not views).
 // All endpoints in this class will be prefixed with "/api".

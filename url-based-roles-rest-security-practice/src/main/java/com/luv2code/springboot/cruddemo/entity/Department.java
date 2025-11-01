@@ -1,9 +1,17 @@
 package com.luv2code.springboot.cruddemo.entity;
 
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;
 
 @Entity
 @Table(name = "departments")
@@ -26,7 +34,7 @@ public class Department {
         this.employees = employees;
     }
 
-    public Department(){}
+    public Department() {}
 
     public long getId() {
         return id;
@@ -52,7 +60,7 @@ public class Department {
         this.employees = employees;
     }
 
-    public void addEmployee(Employee employee){
+    public void addEmployee(Employee employee) {
         employees.add(employee);
         employee.setDepartment(this);
     }

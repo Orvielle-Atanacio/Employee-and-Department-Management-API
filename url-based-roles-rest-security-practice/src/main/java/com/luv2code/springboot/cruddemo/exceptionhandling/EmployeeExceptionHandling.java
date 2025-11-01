@@ -1,14 +1,14 @@
-package com.luv2code.springboot.cruddemo.ExceptionHandling;
+package com.luv2code.springboot.cruddemo.exceptionhandling;
 
 import java.util.stream.Collectors;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 @ControllerAdvice
 public class EmployeeExceptionHandling {
@@ -49,6 +49,15 @@ public class EmployeeExceptionHandling {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponse> handleException(DuplicateResourceException exc) {
+        ErrorResponse error = new ErrorResponse(
+                exc.getMessage(),
+                HttpStatus.CONFLICT.value(),
+                System.currentTimeMillis());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException exc) {
         // Validation errors are also safe to show to the client so they can correct
@@ -64,13 +73,5 @@ public class EmployeeExceptionHandling {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ErrorResponse> handleException(DuplicateResourceException exc) {
-        ErrorResponse error = new ErrorResponse(
-                exc.getMessage(),
-                HttpStatus.CONFLICT.value(),
-                System.currentTimeMillis());
 
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
-    }
 }

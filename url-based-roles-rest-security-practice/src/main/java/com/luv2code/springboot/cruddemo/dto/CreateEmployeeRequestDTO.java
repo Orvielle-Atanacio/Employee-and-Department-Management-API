@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 
 // A Data Transfer Object (DTO) used for creating a new employee.
 // Records are immutable (data cannot be changed after creation), making them perfect for DTOs.
-// This DTO defines the exact structure of the data the API expects from a client (like a web form or frontend) when creating an employee.
+// This DTO defines the exact structure of the data the API expects from a client (like a web form or frontend)
+// when creating an employee.
 // Using a DTO shields the internal Employee Entity from direct exposure to the API.
+
 public record CreateEmployeeRequestDTO(
         // The first name of the employee to be created.
         @NotBlank(message = "First name is mandatory")
