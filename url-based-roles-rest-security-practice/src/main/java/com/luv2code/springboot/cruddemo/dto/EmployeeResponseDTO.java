@@ -9,6 +9,9 @@ public record EmployeeResponseDTO(
         // The first name of the employee to be shown to the client.
         String firstName,
 
+        // The last name of the employee to be shown to the client.
+        String lastName,
+
         // The email address of the employee to be shown to the client.
         String email,
 

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.luv2code.springboot.cruddemo.mapper.DepartmentMapper">
+
+    <resultMap id="DepartmentResultMap" type="Department">
+        <id property="id" column="id" />
+        <result property="name" column="name" />
+    </resultMap>
+
+    <resultMap id="DepartmentWithEmployeesResultMap" type="Department" extends="DepartmentResultMap">
+        <collection property="employees" ofType="Employee"
+                    select="com.luv2code.springboot.cruddemo.mapper.EmployeeMapper.findByDepartmentId"
+                    column="id" />
+    </resultMap>
+
+    <!-- Find all departments -->
+    <select id="findAll" resultMap="DepartmentResultMap">
+        SELECT id, name
+        FROM departments
+        ORDER BY id
+    </select>
+
+    <!-- Find department by ID with employees (eager loading) -->
+    <select id="findByIdWithEmployees" parameterType="long" resultMap="DepartmentWithEmployeesResultMap">
+        SELECT id, name
+        FROM departments
+        WHERE id = #{id}
+    </select>
+
+    <!-- Find department by ID without employees -->
+    <select id="findById" parameterType="long" resultMap="DepartmentResultMap">
+        SELECT id, name
+        FROM departments
+        WHERE id = #{id}
+    </select>
+
+    <!-- Find department by name -->
+    <select id="findByName" parameterType="string" resultMap="DepartmentResultMap">
+        SELECT id, name
+        FROM departments
+        WHERE name = #{name}
+    </select>
+
+    <!-- Insert new department -->
+    <insert id="insert" parameterType="Department" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO departments (name)
+        VALUES (#{name})
+    </insert>
+
+    <!-- Update department -->
+    <update id="update" parameterType="Department">
+        UPDATE departments
+        SET name = #{name}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete department by ID -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM departments WHERE id = #{id}
+    </delete>
+
+    <!-- Count all departments for pagination support -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM departments
+    </select>
+
+</mapper>

@@ -97,7 +97,7 @@ public class DepartmentRestController {
     @PutMapping("/{id}")
     @Operation(summary = "Update existing department")
     public ResponseEntity<DepartmentResponseDTO> updateDepartment(@PathVariable Long id,
-            @RequestBody @Valid DepartmentRequestDTO requestDTO) {
+                                                                  @RequestBody @Valid DepartmentRequestDTO requestDTO) {
 
         // Create department entity from DTO
         Department departmentDetails = new Department();
