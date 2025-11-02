@@ -1,9 +1,9 @@
 package com.luv2code.springboot.cruddemo.service;
 
+import com.github.pagehelper.PageInfo;
 import com.luv2code.springboot.cruddemo.dto.DepartmentRequestDTO;
 import com.luv2code.springboot.cruddemo.dto.DepartmentResponseDTO;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+
 
 public interface DepartmentService {
 
@@ -13,7 +13,7 @@ public interface DepartmentService {
 
     DepartmentResponseDTO getDepartmentByName(String name);
 
-    Page<DepartmentResponseDTO> getAllDepartments(Pageable pageable);
+    PageInfo<DepartmentResponseDTO> getAllDepartments(int pageNum, int pageSize, String orderBy);
 
     DepartmentResponseDTO updateDepartment(Long id, DepartmentRequestDTO request);
 

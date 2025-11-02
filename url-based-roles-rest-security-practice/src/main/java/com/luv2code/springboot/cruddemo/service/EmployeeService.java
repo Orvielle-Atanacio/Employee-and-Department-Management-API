@@ -1,16 +1,18 @@
 package com.luv2code.springboot.cruddemo.service;
 
+import com.github.pagehelper.PageInfo;
 import com.luv2code.springboot.cruddemo.dto.CreateEmployeeRequestDTO;
 import com.luv2code.springboot.cruddemo.dto.EmployeeResponseDTO;
 import com.luv2code.springboot.cruddemo.entity.Employee;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Optional;
+
 
 public interface EmployeeService {
 
-    Page<EmployeeResponseDTO> getAllEmployees(Pageable pageable);
+    PageInfo<EmployeeResponseDTO> getAllEmployees(int pageNum, int pageSize, String orderBy);
 
     EmployeeResponseDTO createEmployee(CreateEmployeeRequestDTO request);
 
@@ -20,7 +22,8 @@ public interface EmployeeService {
 
     void deleteEmployee(int id);
 
-    Page<EmployeeResponseDTO> getEmployeesByDepartment(Long departmentId, Pageable pageable);
+    PageInfo<EmployeeResponseDTO> getEmployeesByDepartment(
+            Long departmentId, int pageNum, int pageSize, String orderBy);
 
     // Add these methods that your controller uses
     Optional<Employee> findByEmail(String email);

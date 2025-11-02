@@ -1,6 +1,8 @@
 package com.luv2code.springboot.cruddemo.service;
 
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.luv2code.springboot.cruddemo.dto.DepartmentRequestDTO;
 import com.luv2code.springboot.cruddemo.dto.DepartmentResponseDTO;
 import com.luv2code.springboot.cruddemo.entity.Department;
@@ -9,9 +11,6 @@ import com.luv2code.springboot.cruddemo.mapper.DepartmentMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,24 +65,16 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<DepartmentResponseDTO> getAllDepartments(Pageable pageable) {
-        // Get all departments from the database
-        List<Department> allDepartments = departmentMapper.findAll();
+    public PageInfo<DepartmentResponseDTO> getAllDepartments(int pageNum, int pageSize, String orderBy) {
+        // Use PageHelper to handle pagination automatically at SQL level
+        PageHelper.startPage(pageNum, pageSize, orderBy);
+        List<Department> departments = departmentMapper.findAll();
 
-        // Apply pagination manually since MyBatis doesn't natively support Spring Data Pageable
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), allDepartments.size());
-
-        if (start > allDepartments.size()) {
-            return new PageImpl<>(List.of(), pageable, allDepartments.size());
-        }
-
-        List<DepartmentResponseDTO> departmentDTOs = allDepartments.subList(start, end)
-                .stream()
+        List<DepartmentResponseDTO> departmentDTOs = departments.stream()
                 .map(this::convertToDepartmentResponseDTO)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(departmentDTOs, pageable, allDepartments.size());
+        return new PageInfo<>(departmentDTOs);
     }
 
     @Override
@@ -96,7 +87,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (!existingDepartment.getName().equals(request.name())) {
             Optional<Department> departmentWithName = departmentMapper.findByName(request.name());
             if (departmentWithName.isPresent() && departmentWithName.get().getId() != id) {
-                throw new RuntimeException("Department name '" + request.name() + "' is already in use by another department");
+                throw new RuntimeException("Department name '" + request.name()
+                        + "' is already in use by another department");
             }
         }
 
