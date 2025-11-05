@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.luv2code.springboot.cruddemo.mapper.EmployeeMapper">
+
+    <resultMap id="EmployeeResultMap" type="Employee">
+        <id property="id" column="id" />
+        <result property="firstName" column="first_name" />
+        <result property="lastName" column="last_name" />
+        <result property="email" column="email" />
+        <association property="department" javaType="Department">
+            <id property="id" column="department_id" />
+            <result property="name" column="department_name" />
+        </association>
+    </resultMap>
+
+    <resultMap id="EmployeeWithDepartmentResultMap" type="Employee">
+        <id property="id" column="id" />
+        <result property="firstName" column="first_name" />
+        <result property="lastName" column="last_name" />
+        <result property="email" column="email" />
+        <association property="department" javaType="Department"
+                     select="com.luv2code.springboot.cruddemo.mapper.DepartmentMapper.findById"
+                     column="department_id" />
+    </resultMap>
+
+    <!-- Find all employees with department information -->
+    <select id="findAll" resultMap="EmployeeWithDepartmentResultMap">
+        SELECT id, first_name, last_name, email, department_id
+        FROM employee
+        ORDER BY id
+    </select>
+
+    <!-- Find employee by ID with department information -->
+    <select id="findById" parameterType="int" resultMap="EmployeeWithDepartmentResultMap">
+        SELECT id, first_name, last_name, email, department_id
+        FROM employee
+        WHERE id = #{id}
+    </select>
+
+    <!-- Find employee by email -->
+    <select id="findByEmail" parameterType="string" resultMap="EmployeeResultMap">
+        SELECT e.id, e.first_name, e.last_name, e.email,
+               e.department_id, d.name as department_name
+        FROM employee e
+                 LEFT JOIN departments d ON e.department_id = d.id
+        WHERE e.email = #{email}
+    </select>
+
+    <!-- Insert new employee -->
+    <insert id="insert" parameterType="Employee" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO employee (first_name, last_name, email, department_id)
+        VALUES (#{firstName}, #{lastName}, #{email}, #{department.id})
+    </insert>
+
+    <!-- Update employee -->
+    <update id="update" parameterType="Employee">
+        UPDATE employee
+        SET first_name = #{firstName},
+            last_name = #{lastName},
+            email = #{email},
+            department_id = #{department.id}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete employee by ID -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM employee WHERE id = #{id}
+    </delete>
+
+    <!-- Find employees by department ID -->
+    <select id="findByDepartmentId" parameterType="long" resultMap="EmployeeResultMap">
+        SELECT e.id, e.first_name, e.last_name, e.email,
+               e.department_id, d.name as department_name
+        FROM employee e
+                 LEFT JOIN departments d ON e.department_id = d.id
+        WHERE e.department_id = #{departmentId}
+        ORDER BY e.id
+    </select>
+    <!-- Count all employees -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM employee
+    </select>
+
+    <!-- Count employees by department ID -->
+    <select id="countByDepartmentId" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM employee WHERE department_id = #{departmentId}
+    </select>
+
+</mapper>
