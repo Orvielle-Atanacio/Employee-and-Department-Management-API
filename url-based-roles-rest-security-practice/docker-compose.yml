@@ -19,6 +19,21 @@ services:
     restart: unless-stopped
 
   # =============================================
+  # REDIS SERVICE
+  # =============================================
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass your_redis_password
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # =============================================
   # SPRING BOOT APPLICATION SERVICE
   # =============================================
   app:
@@ -28,6 +43,7 @@ services:
       - "8080:8080"
     depends_on:
       - db
+      - redis
     env_file:
       - .env
     environment:
@@ -35,6 +51,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/employee_db
       SPRING_DATASOURCE_USERNAME: orvi27
       SPRING_DATASOURCE_PASSWORD: password
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: your_redis_password
     networks:
       - app-network
     restart: unless-stopped
@@ -48,4 +67,6 @@ networks:
 
 volumes:
   db-data:
+    driver: local
+  redis-data:
     driver: local
