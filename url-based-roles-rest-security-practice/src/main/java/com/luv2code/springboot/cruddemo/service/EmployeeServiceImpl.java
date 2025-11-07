@@ -1,5 +1,7 @@
 package com.luv2code.springboot.cruddemo.service;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.luv2code.springboot.cruddemo.dto.CreateEmployeeRequestDTO;
 import com.luv2code.springboot.cruddemo.dto.DepartmentResponseDTO;
 import com.luv2code.springboot.cruddemo.dto.EmployeeResponseDTO;
@@ -11,9 +13,6 @@ import com.luv2code.springboot.cruddemo.mapper.EmployeeMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,24 +32,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<EmployeeResponseDTO> getAllEmployees(Pageable pageable) {
-        // Get all employees from the database
-        List<Employee> allEmployees = employeeMapper.findAll();
+    public PageInfo<EmployeeResponseDTO> getAllEmployees(int pageNum, int pageSize, String orderBy) {
+        PageHelper.startPage(pageNum, pageSize, orderBy);
+        List<Employee> employees = employeeMapper.findAll();
 
-        // Apply pagination manually since MyBatis doesn't natively support Spring Data Pageable
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), allEmployees.size());
-
-        if (start > allEmployees.size()) {
-            return new PageImpl<>(List.of(), pageable, allEmployees.size());
-        }
-
-        List<EmployeeResponseDTO> employeeDTOs = allEmployees.subList(start, end)
-                .stream()
+        List<EmployeeResponseDTO> employeeDTOs = employees.stream()
                 .map(this::convertToEmployeeResponseDTO)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(employeeDTOs, pageable, allEmployees.size());
+        return new PageInfo<>(employeeDTOs);
     }
 
     @Override
@@ -135,24 +125,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<EmployeeResponseDTO> getEmployeesByDepartment(Long departmentId, Pageable pageable) {
-        // Get employees by department ID
+    public PageInfo<EmployeeResponseDTO> getEmployeesByDepartment(Long departmentId, int pageNum, int pageSize, String orderBy) {
+        PageHelper.startPage(pageNum, pageSize, orderBy);
         List<Employee> departmentEmployees = employeeMapper.findByDepartmentId(departmentId);
 
-        // Apply pagination
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), departmentEmployees.size());
-
-        if (start > departmentEmployees.size()) {
-            return new PageImpl<>(List.of(), pageable, departmentEmployees.size());
-        }
-
-        List<EmployeeResponseDTO> employeeDTOs = departmentEmployees.subList(start, end)
-                .stream()
+        List<EmployeeResponseDTO> employeeDTOs = departmentEmployees.stream()
                 .map(this::convertToEmployeeResponseDTO)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(employeeDTOs, pageable, departmentEmployees.size());
+        return new PageInfo<>(employeeDTOs);
     }
 
     // Helper method to convert Employee entity to EmployeeResponseDTO

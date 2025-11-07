@@ -1,6 +1,6 @@
 package com.luv2code.springboot.cruddemo.controller;
 
-
+import com.github.pagehelper.PageInfo;
 import com.luv2code.springboot.cruddemo.dto.CreateEmployeeRequestDTO;
 import com.luv2code.springboot.cruddemo.dto.DepartmentResponseDTO;
 import com.luv2code.springboot.cruddemo.dto.EmployeeResponseDTO;
@@ -11,10 +11,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @Tag(name = "Employee Management", description = "CRUD operations for employees")
 @RestController
@@ -41,35 +36,38 @@ public class EmployeeRestController {
 
     @GetMapping("/employees")
     @Operation(summary = "Get all employees with corresponding department details")
-    public ResponseEntity<Page<EmployeeResponseDTO>> getAllEmployees(
-            @Valid @RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<PageInfo<EmployeeResponseDTO>> getAllEmployees(
+            @Valid @RequestParam(defaultValue = "1") int page,  // Changed from 0 to 1
             @Valid @RequestParam(defaultValue = "10") int size,
             @Valid @RequestParam(defaultValue = "id,asc") String[] sort) {
 
+        // Convert sort parameters to PageHelper format
         String sortField = sort[0];
         String sortDirection = sort.length > 1 ? sort[1] : "asc";
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        String orderBy = convertToOrderBy(sortField, sortDirection);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
-        Page<EmployeeResponseDTO> employeePage = employeeService.getAllEmployees(pageable);
+        // Use PageHelper with converted orderBy
+        PageInfo<EmployeeResponseDTO> employeePage = employeeService.getAllEmployees(page, size, orderBy);
 
         return ResponseEntity.ok(employeePage);
     }
 
     @GetMapping("/departments/{departmentId}/employees")
     @Operation(summary = "Get employees by department ID")
-    public ResponseEntity<Page<EmployeeResponseDTO>> getEmployeesByDepartment(
+    public ResponseEntity<PageInfo<EmployeeResponseDTO>> getEmployeesByDepartment(
             @PathVariable Long departmentId,
-            @Valid @RequestParam(defaultValue = "0") int page,
+            @Valid @RequestParam(defaultValue = "1") int page,  // Changed from 0 to 1
             @Valid @RequestParam(defaultValue = "10") int size,
             @Valid @RequestParam(defaultValue = "id,asc") String[] sort) {
 
+        // Convert sort parameters to PageHelper format
         String sortField = sort[0];
         String sortDirection = sort.length > 1 ? sort[1] : "asc";
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        String orderBy = convertToOrderBy(sortField, sortDirection);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
-        Page<EmployeeResponseDTO> employeePage = employeeService.getEmployeesByDepartment(departmentId, pageable);
+        // Use PageHelper with converted orderBy
+        PageInfo<EmployeeResponseDTO> employeePage =
+                employeeService.getEmployeesByDepartment(departmentId, page, size, orderBy);
 
         return ResponseEntity.ok(employeePage);
     }
@@ -125,5 +123,31 @@ public class EmployeeRestController {
         );
 
         return ResponseEntity.ok(responseDTO);
+    }
+
+    // Helper method to convert Spring Data sort to SQL ORDER BY clause
+    private String convertToOrderBy(String sortField, String sortDirection) {
+        // Map entity field names to database column names if needed
+        String columnName = mapFieldToColumn(sortField);
+        return columnName + " " + sortDirection.toUpperCase();
+    }
+
+    // Helper method to map entity field names to database column names
+    private String mapFieldToColumn(String fieldName) {
+        // Add mappings for your specific database column names
+        switch (fieldName.toLowerCase()) {
+            case "id":
+                return "id";
+            case "firstname":
+                return "first_name";
+            case "lastname":
+                return "last_name";
+            case "email":
+                return "email";
+            case "department":
+                return "department_id";
+            default:
+                return fieldName; // Use as-is if no mapping needed
+        }
     }
 }
