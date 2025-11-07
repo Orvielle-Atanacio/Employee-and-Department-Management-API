@@ -11,6 +11,8 @@ import com.luv2code.springboot.cruddemo.mapper.DepartmentMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +80,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @CachePut(value = "departments", key = "#id")
     public DepartmentResponseDTO updateDepartment(Long id, DepartmentRequestDTO request) {
         // Find existing department
         Department existingDepartment = departmentMapper.findById(id)
